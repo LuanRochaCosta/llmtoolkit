@@ -45,8 +45,8 @@ export const tools: Tool[] = [
     slug: 'token-words',
     name: 'Token ↔ Words Converter',
     description:
-      'Convert between tokens and words for every major model, using model-specific tokenization ratios.',
-    status: 'planned',
+      'Convert between tokens and words instantly: 1,000 tokens ≈ 750 words. Reference table from 100 to 1M tokens with pages and context fit.',
+    status: 'live',
     keywords: ['token to words', 'words to tokens', 'how many words is 1000 tokens', 'tokens per word'],
   },
 ];

@@ -1,0 +1,175 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const WORDS_PER_TOKEN = 0.75;
+const PAGES_PER_WORD = 1 / 500;
+
+const commonTokens = [100, 250, 500, 1_000, 2_000, 4_000, 8_000, 16_000, 32_000, 64_000, 128_000, 200_000, 400_000, 1_000_000];
+
+function fmt(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
+function pagesOf(tokens: number): string {
+  const pages = tokens * WORDS_PER_TOKEN * PAGES_PER_WORD;
+  return pages < 10 ? pages.toFixed(1) : String(Math.round(pages));
+}
+
+function fitsIn(tokens: number): string {
+  if (tokens <= 100_000) return 'every current model';
+  if (tokens <= 160_000) return 'Claude / GPT-5 / Gemini (200K+)';
+  if (tokens <= 320_000) return 'GPT-5 / Gemini (400K+)';
+  if (tokens <= 800_000) return 'Gemini only (1M)';
+  return 'exceeds all current windows';
+}
+
+const faqs = [
+  {
+    q: 'How many words is 1,000 tokens?',
+    a: 'Approximately 750 words of English text. English averages 1.33 tokens per word (0.75 words per token), so 1,000 tokens ≈ 750 words ≈ 4,000 characters ≈ 1.5 pages. The ratio holds well for prose but not for code, which tokenizes denser.',
+  },
+  {
+    q: 'How many tokens is 500 words?',
+    a: 'About 665 tokens. At 1.33 tokens per English word, multiply your word count by 1.33 to estimate tokens. A typical blog post of 1,500 words runs ≈ 2,000 tokens; a 60,000-word manuscript runs ≈ 80,000 tokens — which fits comfortably in every current model\u2019s context window.',
+  },
+  {
+    q: 'How many tokens is a page of text?',
+    a: 'A single-spaced page of English (≈500 words) is roughly 665 tokens. Double-spaced academic pages (≈250 words) run ≈330 tokens. So a 30-page document is about 20,000 tokens — small enough that most models can hold several documents at once.',
+  },
+  {
+    q: 'Do different models have different words-per-token ratios?',
+    a: 'Slightly, yes. Modern tokenizers (GPT-5\u2019s o200k, Claude\u2019s, Gemini\u2019s) are all BPE-family and converge near 0.75 words per token for English. The big differences appear in other languages: Spanish and French run 1.5–2 tokens per word, German slightly higher, and CJK languages can exceed one token per character — meaning 1,000 tokens buys you far less Chinese text than English.',
+  },
+  {
+    q: 'How many characters per token?',
+    a: 'About 4 characters per token for English, including the space after each word. Common words ("the", "and", "is") are single tokens; rarer words split into 2–4 tokens. Numbers and unusual Unicode sequences tokenize less efficiently.',
+  },
+  {
+    q: 'Why does this matter for API costs?',
+    a: 'Because you pay per token, not per word. Converting your content budget to tokens tells you your real API spend: 100 articles of 1,500 words each ≈ 200,000 tokens ≈ $0.25 to process on GPT-5 mini, but $2.50 on GPT-5 and $0.01 on GPT-5 nano. Measure your actual text with our Token Counter for exact numbers.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<BaseLayout
+  title="Token to Words Converter — How Many Words Is That?"
+  description="Convert tokens to words (and back) instantly: 1,000 tokens ≈ 750 words. Includes a reference table from 100 to 1M tokens with word and page counts, plus per-language ratio notes."
+  dateModified="2026-08-26"
+  extraSchemas={[faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Token ↔ Words Converter</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        <strong>1,000 tokens ≈ 750 words</strong> in English — that’s the headline. Enter any amount below for a
+        precise conversion, or scan the reference table for common sizes.
+      </p>
+    </header>
+
+    <!-- ============ CONVERTER ============ -->
+    <section class="mt-8" aria-label="Converter">
+      <div class="grid gap-4 rounded-xl border border-[#E5E1D7] bg-white p-5 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
+        <div>
+          <label for="cv-input" class="mb-1 block text-sm font-medium">Amount</label>
+          <input id="cv-input" type="number" min="0" value="1000"
+            class="w-full rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-2.5 font-mono text-sm outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20" />
+        </div>
+        <div class="flex gap-2" role="group" aria-label="Conversion direction">
+          <button type="button" id="dir-tokens" class="rounded-lg border-2 border-[#0F6B5C] bg-[#0F6B5C] px-4 py-2.5 text-sm font-medium text-white">tokens → words</button>
+          <button type="button" id="dir-words" class="rounded-lg border-2 border-[#E5E1D7] bg-white px-4 py-2.5 text-sm font-medium">words → tokens</button>
+        </div>
+        <div>
+          <p class="mb-1 block text-sm font-medium text-[#6E6A60]">Result</p>
+          <p id="cv-result" class="w-full rounded-lg bg-[#F1EEE7] px-3 py-2.5 font-mono text-sm font-bold">—</p>
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-[#6E6A60]">English prose at 0.75 words per token. Other languages vary — see FAQ below.</p>
+    </section>
+
+    <!-- ============ TABLE ============ -->
+    <section class="mt-10" aria-label="Reference table">
+      <h2 class="text-2xl font-bold tracking-tight">Token to words reference table</h2>
+      <div class="mt-4 overflow-x-auto rounded-xl border border-[#E5E1D7] bg-white">
+        <table class="w-full min-w-[480px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
+              <th class="px-4 py-3">Tokens</th>
+              <th class="px-4 py-3">≈ Words</th>
+              <th class="px-4 py-3">≈ Characters</th>
+              <th class="px-4 py-3">≈ Pages</th>
+              <th class="px-4 py-3">Fits in</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              commonTokens.map((t) => {
+                const words = Math.round(t * WORDS_PER_TOKEN);
+                const pages = (words * PAGES_PER_WORD).toFixed(pagesOf(t));
+                return (
+                  <tr class="border-b border-[#E5E1D7] last:border-0 hover:bg-[#FBFAF7]">
+                    <td class="px-4 py-3 font-mono font-semibold">{fmt(t)}</td>
+                    <td class="px-4 py-3 font-mono">{fmt(words)}</td>
+                    <td class="px-4 py-3 font-mono">{fmt(t * 4)}</td>
+                    <td class="px-4 py-3 font-mono">{pages}</td>
+                    <td class="px-4 py-3 text-xs text-[#6E6A60]">{fitsIn(t)}</td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs leading-relaxed text-[#6E6A60]">
+        Estimates assume English prose: 0.75 words and 4 characters per token, 500 words per single-spaced page.
+        The "fits in" column shows the smallest current model window that holds this many tokens with room for a
+        response.
+      </p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ RELATED ============ -->
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">Measure, don’t estimate</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        Ratios get you close; the
+        <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">AI Token Counter</a> gets you
+        exact — it runs OpenAI’s real tokenizer in your browser. Then price the result with the
+        <a href="/tools/cost-calculator/" class="font-medium text-[#0F6B5C] underline">API Cost Calculator</a>.
+      </p>
+    </section>
+  </article>
+
+  <script>
+    import { initTokenWords } from '../../scripts/token-words';
+    initTokenWords();
+  </script>
+</BaseLayout>
