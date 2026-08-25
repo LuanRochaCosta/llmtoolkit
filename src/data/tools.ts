@@ -22,7 +22,7 @@ export const tools: Tool[] = [
     name: 'LLM Pricing Comparison',
     description:
       'Side-by-side API pricing for every major model — input, output, cached input and context — each row dated to its last verification.',
-    status: 'planned',
+    status: 'live',
     keywords: ['llm pricing comparison', 'llm api pricing', 'ai model api prices', 'cheapest llm api'],
   },
   {

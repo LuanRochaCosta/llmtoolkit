@@ -1,0 +1,202 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { models } from '../../data/models';
+
+const sorted = [...models].sort((a, b) => (a.inputPer1M ?? Infinity) - (b.inputPer1M ?? Infinity));
+
+function fmt(n: number | null | undefined): string {
+  if (n === null || n === undefined) return '—';
+  return `$${n < 1 ? n.toFixed(n < 0.1 ? 3 : 2) : n.toFixed(2)}`;
+}
+function fmtCtx(n: number): string {
+  return `${Math.round(n / 1000)}K`;
+}
+
+const cheapest = sorted.find((m) => m.verified && m.inputPer1M !== null) ?? sorted[0];
+const biggestCtx = [...models].sort((a, b) => b.contextWindow - a.contextWindow)[0];
+const cheapestOut = [...models]
+  .filter((m) => m.verified && m.outputPer1M !== null)
+  .sort((a, b) => (a.outputPer1M ?? Infinity) - (b.outputPer1M ?? Infinity))[0];
+
+const faqs = [
+  {
+    q: 'What is the cheapest LLM API right now?',
+    a: `As of August 2026, the cheapest verified production-grade API is ${cheapest.name} at ${fmt(cheapest.inputPer1M)} per 1M input tokens and ${fmt(cheapest.outputPer1M)} per 1M output tokens. If your workload is output-heavy, ${cheapestOut.name} is the cheapest per output token at ${fmt(cheapestOut.outputPer1M)} per 1M. Prices are verified against official provider pricing pages.`,
+  },
+  {
+    q: 'How much does GPT-5 cost per million tokens?',
+    a: 'GPT-5 costs $1.25 per 1M input tokens and $10.00 per 1M output tokens, with cached input at $0.125. The smaller tiers are far cheaper: GPT-5 mini runs $0.25 in / $2.00 out, and GPT-5 nano runs $0.05 in / $0.40 out — 25× cheaper than the flagship on input.',
+  },
+  {
+    q: 'How much does Claude cost per million tokens?',
+    a: 'Anthropic\u2019s current lineup: Claude Opus 5 at $5.00 in / $25.00 out, Claude Sonnet 5 at $3.00 in / $15.00 out, and Claude Haiku 4.5 at $1.00 in / $5.00 out. All Claude models include a 200K context window, and cached input costs 10% of the base input rate.',
+  },
+  {
+    q: 'What does cached input pricing mean?',
+    a: 'Prompt caching lets you reuse the input you\u2019ve already sent — a long system prompt, a document, or conversation history — at a steep discount, typically 10% of the normal input price. If your requests repeat most of their context (agents, RAG, multi-turn chat), caching routinely cuts input costs by 60–90%. The cached column in the table shows each model\u2019s discounted rate.',
+  },
+  {
+    q: 'Which LLM has the largest context window?',
+    a: `${biggestCtx.name} leads with a ${fmtCtx(biggestCtx.contextWindow)}-token context window. Google\u2019s Gemini family ships 1M tokens across the lineup, while OpenAI\u2019s GPT-5 family offers 400K and Anthropic\u2019s Claude models offer 200K. More context costs more per request in practice, because you pay for every input token you send.`,
+  },
+  {
+    q: 'How should I pick a model based on price?',
+    a: 'Match the model tier to the task difficulty, not the other way around. Route high-volume, simple tasks (classification, extraction, routing) to nano-tier models; save flagship models for hard reasoning. Then check your input/output ratio: agent workloads that generate long outputs should compare output prices first — that\u2019s usually 80% of the bill. Our API Cost Calculator (shipping next) computes this for your exact volumes.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const lastCheck = [...new Set(models.map((m) => m.lastChecked))].sort().pop();
+---
+
+<BaseLayout
+  title="LLM API Pricing Comparison — Verified 2026 Rates"
+  description="Side-by-side LLM API pricing for GPT-5, Claude and Gemini: input, cached input and output rates per 1M tokens, plus context windows. Every row verified against official provider pages and dated."
+  dateModified="2026-08-26"
+  extraSchemas={[faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">LLM API Pricing Comparison</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        Every major model, priced side by side. <strong>{models.length} models</strong> from OpenAI, Anthropic and
+        Google — input, cached input and output rates per 1M tokens, plus context windows. Prices verified against
+        official provider pages as of <strong>{lastCheck}</strong>; click any column header to sort.
+      </p>
+    </header>
+
+    <!-- ============ QUICK ANSWER ============ -->
+    <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Key pricing facts">
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Cheapest input</p>
+        <p class="mt-1.5 font-semibold">{cheapest.name}</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#0F6B5C]">{fmt(cheapest.inputPer1M)}<span class="text-sm font-normal text-[#6E6A60]"> /1M in</span></p>
+      </div>
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Cheapest output</p>
+        <p class="mt-1.5 font-semibold">{cheapestOut.name}</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#0F6B5C]">{fmt(cheapestOut.outputPer1M)}<span class="text-sm font-normal text-[#6E6A60]"> /1M out</span></p>
+      </div>
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Largest context</p>
+        <p class="mt-1.5 font-semibold">{biggestCtx.name}</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#0F6B5C]">{fmtCtx(biggestCtx.contextWindow)}<span class="text-sm font-normal text-[#6E6A60]"> tokens</span></p>
+      </div>
+    </section>
+
+    <!-- ============ TABLE ============ -->
+    <section class="mt-10" aria-label="Pricing table">
+      <h2 class="text-2xl font-bold tracking-tight">All {models.length} models, sorted by input price</h2>
+      <div class="mt-4 overflow-x-auto rounded-xl border border-[#E5E1D7] bg-white">
+        <table id="pricing-table" class="w-full min-w-[680px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
+              <th class="px-4 py-3" data-sort="model">Model</th>
+              <th class="cursor-pointer px-4 py-3 select-none hover:text-[#1C1B18]" data-sort="context" data-type="num">Context</th>
+              <th class="cursor-pointer px-4 py-3 select-none hover:text-[#1C1B18]" data-sort="input" data-type="num">Input /1M</th>
+              <th class="cursor-pointer px-4 py-3 select-none hover:text-[#1C1B18]" data-sort="cached" data-type="num">Cached /1M</th>
+              <th class="cursor-pointer px-4 py-3 select-none hover:text-[#1C1B18]" data-sort="output" data-type="num">Output /1M</th>
+              <th class="px-4 py-3">Verified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              sorted.map((m) => (
+                <tr class="border-b border-[#E5E1D7] last:border-0 hover:bg-[#FBFAF7]">
+                  <td class="px-4 py-3">
+                    <span class="font-medium">{m.name}</span>
+                    <span class="block text-xs text-[#6E6A60]">{m.provider}</span>
+                  </td>
+                  <td class="px-4 py-3 font-mono" data-value={m.contextWindow}>{fmtCtx(m.contextWindow)}</td>
+                  <td class="px-4 py-3 font-mono font-semibold text-[#0F6B5C]" data-value={m.inputPer1M ?? -1}>{fmt(m.inputPer1M)}</td>
+                  <td class="px-4 py-3 font-mono text-[#6E6A60]" data-value={m.cachedInputPer1M ?? -1}>{fmt(m.cachedInputPer1M)}</td>
+                  <td class="px-4 py-3 font-mono" data-value={m.outputPer1M ?? -1}>{fmt(m.outputPer1M)}</td>
+                  <td class="px-4 py-3 text-xs">
+                    {m.verified ? (
+                      <span class="inline-flex items-center gap-1.5">
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#0F6B5C]" />
+                        <span class="text-[#6E6A60]">{m.lastChecked}</span>
+                      </span>
+                    ) : (
+                      <span class="inline-flex items-center gap-1.5">
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#9A3412]" />
+                        <span class="text-[#9A3412]" title="Not yet verified against the official page">unverified</span>
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs leading-relaxed text-[#6E6A60]">
+        Prices are per 1 million tokens in USD, from official provider pricing pages. A green dot means the row was
+        checked against the provider's own page on the date shown; an amber dot means the figure comes from a
+        secondary source and awaits verification. Llama and other open-weight models are served at provider-dependent
+        rates and are excluded until we can verify them.
+      </p>
+    </section>
+
+    <!-- ============ METHODOLOGY ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">How we keep this table honest</h2>
+      <p class="mt-4 leading-relaxed">
+        Most pricing trackers quietly rot: providers change rates, launch tiers, retire models — and the table keeps
+        showing last year's numbers. We do three things differently. <strong>Every row carries its own verification
+        date</strong>, checked against the provider's official pricing page. <strong>Rows we haven't verified are
+        labeled as such</strong> instead of pretending confidence. And the whole table gets re-checked on the first of
+        every month — including after major model launches, when prices tend to move.
+      </p>
+      <p class="mt-4 leading-relaxed">
+        Want to sanity-check your own numbers before committing to a provider? Count your real token usage with the
+        <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">AI Token Counter</a> — it runs
+        the exact OpenAI tokenizer in your browser, so the counts match your bill.
+      </p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ RELATED ============ -->
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">Next in the toolkit</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        The API Cost Calculator — turn these per-token rates into a real monthly bill for your request volumes —
+        plus Context Window Comparison and the Token ↔ Words Converter.
+        <a href="/" class="font-medium text-[#0F6B5C] underline">See all tools</a>
+      </p>
+    </section>
+  </article>
+
+  <script>
+    import { initPricingSort } from '../../scripts/pricing-sort';
+    initPricingSort();
+  </script>
+</BaseLayout>
