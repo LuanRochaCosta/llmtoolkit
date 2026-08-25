@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config';
+---
+
+<BaseLayout
+  title="About"
+  description={`Why ${SITE.name} exists, how the data is verified, and who builds it.`}
+>
+  <article class="max-w-2xl">
+    <h1 class="mb-6 text-3xl font-bold tracking-tight">About {SITE.name}</h1>
+
+    <div class="space-y-5 leading-relaxed">
+      <p>
+        {SITE.name} is an independent toolkit for developers working with large language models. It exists because the
+        two questions every AI builder asks — <em>“how many tokens is this?”</em> and <em>“what will this actually cost
+        me?”</em> — deserve answers that are free, private, and honest about their data.
+      </p>
+
+      <h2 class="mt-8 text-xl font-bold tracking-tight">Our data policy</h2>
+      <p>
+        Pricing data goes stale fast in this industry. That is why every model row on this site carries its own
+        <span class="font-mono text-sm"> lastChecked</span> date and source link. We verify against official provider
+        pricing pages on a fixed schedule, and we would rather show a dated number than a confident guess.
+      </p>
+
+      <h2 class="mt-8 text-xl font-bold tracking-tight">Privacy</h2>
+      <p>
+        All tools run 100% client-side in your browser. The text you paste into a token counter never leaves your
+        machine — there is no backend that could receive it. See the <a href="/privacy" class="text-[#0F6B5C] underline">privacy policy</a> for details.
+      </p>
+
+      <h2 class="mt-8 text-xl font-bold tracking-tight">Independence</h2>
+      <p>
+        The site may earn referral commissions from tools reviewed or recommended. This never affects what data we
+        publish: prices, benchmarks and comparisons follow the same verification process regardless of commercial
+        relationships.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { tools } from '../data/tools';
+import { models } from '../data/models';
+import { SITE } from '../config';
+
+const checkedDates = models.map((m) => m.lastChecked).sort();
+const latestCheck = checkedDates[checkedDates.length - 1];
+const verifiedCount = models.filter((m) => m.verified).length;
+---
+
+<BaseLayout title={SITE.name} description={SITE.description}>
+  <section class="py-10 sm:py-16">
+    <p class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-[#9A3412]">Free · No sign-up · 100% in-browser</p>
+    <h1 class="max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+      AI tools you can trust, priced data you can verify.
+    </h1>
+    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-[#6E6A60]">
+      Token counters, LLM pricing comparisons, context window charts and API cost calculators for developers
+      building with GPT, Claude and Gemini. Every tool runs entirely in your browser — no data ever leaves your machine.
+    </p>
+  </section>
+
+  <section id="tools" class="scroll-mt-20 py-8">
+    <h2 class="mb-6 text-2xl font-bold tracking-tight">All tools</h2>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {tools.map((tool) => <ToolCard tool={tool} />)}
+    </div>
+  </section>
+
+  <section class="py-10">
+    <div class="rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-8">
+      <h2 class="mb-3 text-xl font-bold tracking-tight">How our pricing data stays honest</h2>
+      <p class="max-w-2xl leading-relaxed text-[#4A4740]">
+        Every model row carries a <span class="font-mono text-sm">lastChecked</span> date and its source. We re-verify
+        prices against official provider pages on a fixed schedule, and rows pending re-verification are marked as
+        such. Currently tracking <strong>{models.length} models</strong> — {verifiedCount} verified against official pages
+        as of {latestCheck}.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

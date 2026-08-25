@@ -1,0 +1,234 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { models } from '../../data/models';
+
+const modelData = models.map((m) => ({
+  id: m.id,
+  provider: m.provider,
+  name: m.name,
+  contextWindow: m.contextWindow,
+  inputPer1M: m.inputPer1M,
+  outputPer1M: m.outputPer1M,
+  lastChecked: m.lastChecked,
+}));
+
+const faqs = [
+  {
+    q: 'How many words is 1,000 tokens?',
+    a: 'Roughly 750 words of English text. English averages about 1.3 tokens per word, so 1,000 tokens ≈ 750 words ≈ 4,000 characters. The ratio shifts for other content: Spanish and French run 1.5–2 tokens per word, and CJK languages can exceed one token per character.',
+  },
+  {
+    q: 'How many characters are in one token?',
+    a: 'For English, one token averages about 4 characters, including the space that follows it. Common words like "the" or "and" are single tokens, while rarer words split into several. Non-Latin scripts generally use more tokens per character than English.',
+  },
+  {
+    q: 'Is my text sent to a server?',
+    a: 'No. This counter runs entirely in your browser using a JavaScript port of OpenAI\u2019s tokenizer. Your text is never transmitted, logged, or stored — close the tab and it is gone.',
+  },
+  {
+    q: 'Why is the Claude or Gemini count marked as estimated?',
+    a: 'Anthropic and Google have not published their tokenizers, so no third-party tool can count their tokens exactly. For those models we estimate from per-provider character ratios — about 3.5 characters per token for Claude and 4 for Gemini — which typically lands within ±5% of the real API count. We mark those results as estimates instead of pretending they are exact. OpenAI models use the actual BPE vocabulary tables, so those counts match the API.',
+  },
+  {
+    q: 'Does the token count include my system prompt?',
+    a: 'Whatever you paste is what gets counted — so paste all of it. Your API bill covers the full request: system prompt, conversation history, tool definitions, and the user message.',
+  },
+  {
+    q: 'How do I turn tokens into dollars?',
+    a: 'Cost = (tokens ÷ 1,000,000) × price per 1M tokens. For example, 40,000 input tokens on a model charging $2.50 per 1M input tokens cost $0.10. This page computes the input cost automatically for the selected model; output tokens usually cost 3–5× the input rate.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'AI Token Counter',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout
+  title="AI Token Counter — Exact GPT-5 & Claude Token Counts"
+  description="Free AI token counter that runs entirely in your browser. Exact counts for GPT-5, GPT-4o and GPT-4 using the same tokenizer as the API, estimates for Claude and Gemini — with live cost and context window usage."
+  extraSchemas={[appSchema, faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">AI Token Counter</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        Paste any text to count its tokens instantly. OpenAI models (GPT-5, GPT-4o, GPT-4) are counted with the
+        <strong>exact same tokenizer the API uses</strong>; Claude, Gemini and Llama show clearly-marked estimates.
+        Nothing you paste ever leaves your browser.
+      </p>
+    </header>
+
+    <!-- ============ TOOL ============ -->
+    <section class="mt-8" aria-label="Token counter tool">
+      <div class="grid gap-4 lg:grid-cols-[1fr_300px]">
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+          <label for="token-input" class="mb-2 block text-sm font-medium">Your text</label>
+          <textarea
+            id="token-input"
+            rows="14"
+            spellcheck="false"
+            placeholder="Paste your prompt, document, or code here…"
+            class="h-64 w-full resize-y rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] p-4 font-mono text-sm leading-relaxed outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20"
+          ></textarea>
+        </div>
+
+        <aside class="flex flex-col gap-4">
+          <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+            <label for="model-select" class="mb-2 block text-sm font-medium">Model</label>
+            <select
+              id="model-select"
+              class="w-full rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-2.5 text-sm outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20"
+            ></select>
+            <p id="method-badge" class="mt-3 text-xs leading-relaxed text-[#6E6A60]">—</p>
+            <p id="cost-detail" class="mt-2 text-xs leading-relaxed text-[#6E6A60]">—</p>
+          </div>
+
+          <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+            <p class="mb-2 text-sm font-medium">Context window usage</p>
+            <div class="h-2.5 w-full overflow-hidden rounded-full bg-[#F1EEE7]">
+              <div id="context-fill" class="h-full w-0 rounded-full bg-[#0F6B5C] transition-all duration-300"></div>
+            </div>
+            <p id="context-label" class="mt-2 text-xs leading-relaxed text-[#6E6A60]">—</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4" aria-live="polite">
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Tokens</p>
+          <p id="stat-tokens" class="mt-1 font-mono text-2xl font-bold text-[#0F6B5C]">0</p>
+        </div>
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Words</p>
+          <p id="stat-words" class="mt-1 font-mono text-2xl font-bold">0</p>
+        </div>
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Characters</p>
+          <p id="stat-chars" class="mt-1 font-mono text-2xl font-bold">0</p>
+        </div>
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Cost (input)</p>
+          <p id="stat-cost" class="mt-1 font-mono text-2xl font-bold text-[#9A3412]">$0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">How this token counter works</h2>
+      <p class="mt-4 leading-relaxed">
+        Tokens are the chunks language models actually read — and bill on. OpenAI splits text with byte-pair encoding
+        (BPE): this page loads OpenAI's real vocabulary tables (<span class="font-mono text-sm">o200k_base</span> for
+        GPT-5 and GPT-4o, <span class="font-mono text-sm">cl100k_base</span> for GPT-4) and runs the identical
+        encoding in your browser, so the count matches what the API charges you.
+      </p>
+      <p class="mt-4 leading-relaxed">
+        Anthropic and Google have not published their tokenizers, so Claude, Gemini and Llama are estimated from
+        character ratios instead. We label those results honestly rather than showing a precise-looking number
+        that isn't.
+      </p>
+
+      <div class="table-wrap mt-6 overflow-x-auto">
+        <table class="w-full min-w-[520px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
+              <th class="py-2.5 pr-4">Model family</th>
+              <th class="py-2.5 pr-4">Counting method</th>
+              <th class="py-2.5">Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-[#E5E1D7]">
+              <td class="py-2.5 pr-4">GPT-5, GPT-4o, o-series</td>
+              <td class="py-2.5 pr-4">o200k_base BPE</td>
+              <td class="py-2.5 font-medium text-[#0F6B5C]">Exact</td>
+            </tr>
+            <tr class="border-b border-[#E5E1D7]">
+              <td class="py-2.5 pr-4">GPT-4, GPT-3.5</td>
+              <td class="py-2.5 pr-4">cl100k_base BPE</td>
+              <td class="py-2.5 font-medium text-[#0F6B5C]">Exact</td>
+            </tr>
+            <tr class="border-b border-[#E5E1D7]">
+              <td class="py-2.5 pr-4">Claude</td>
+              <td class="py-2.5 pr-4">~3.5 characters per token</td>
+              <td class="py-2.5 text-[#6E6A60]">Estimate, ±5%</td>
+            </tr>
+            <tr class="border-b border-[#E5E1D7]">
+              <td class="py-2.5 pr-4">Gemini</td>
+              <td class="py-2.5 pr-4">~4 characters per token</td>
+              <td class="py-2.5 text-[#6E6A60]">Estimate, ±5%</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4">Llama</td>
+              <td class="py-2.5 pr-4">~4 characters per token</td>
+              <td class="py-2.5 text-[#6E6A60]">Estimate, ±5%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ COST ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">From tokens to dollars</h2>
+      <p class="mt-4 leading-relaxed">
+        The formula is simple:
+        <span class="rounded bg-[#F1EEE7] px-1.5 py-0.5 font-mono text-sm">cost = tokens ÷ 1,000,000 × price per 1M</span>.
+        40,000 input tokens on a $2.50/1M model cost $0.10. The catch is that output tokens usually cost 3–5× the
+        input rate, so a realistic budget needs both numbers — that is exactly what our API cost calculator (shipping
+        next) is for.
+      </p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ RELATED ============ -->
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">More tools shipping next</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        LLM Pricing Comparison, Context Window Comparison, the API Cost Calculator and the Token ↔ Words Converter —
+        all free, all in-browser. <a href="/" class="font-medium text-[#0F6B5C] underline">Back to all tools</a>
+      </p>
+    </section>
+  </article>
+
+  <script is:inline type="application/json" id="model-data" set:html={JSON.stringify(modelData)} />
+  <script>
+    import { initTokenCounter } from '../../scripts/token-counter';
+    initTokenCounter();
+  </script>
+</BaseLayout>

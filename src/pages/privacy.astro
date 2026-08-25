@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config';
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description={`Privacy policy for ${SITE.name}: no cookies, no tracking, all tools run client-side.`}
+  noindex
+>
+  <article class="max-w-2xl">
+    <h1 class="mb-6 text-3xl font-bold tracking-tight">Privacy Policy</h1>
+    <p class="mb-6 text-sm text-[#6E6A60]">Last updated: August 25, 2026</p>
+
+    <div class="space-y-5 leading-relaxed">
+      <h2 class="mt-6 text-xl font-bold tracking-tight">The short version</h2>
+      <p>
+        All tools on {SITE.name} run entirely in your browser. Text you paste into any tool is processed locally and
+        never sent to a server. We do not require accounts and we do not store user content.
+      </p>
+
+      <h2 class="mt-6 text-xl font-bold tracking-tight">Data we collect</h2>
+      <p>
+        <strong>None by default.</strong> The site sets no cookies of its own. If third-party analytics or advertising
+        is enabled in the future (for example privacy-friendly, cookieless analytics or an ad network), this policy
+        will be updated before that happens, and the tools' behavior will not change.
+      </p>
+
+      <h2 class="mt-6 text-xl font-bold tracking-tight">Your content</h2>
+      <p>
+        Prompts, documents, and any other text you enter into our tools are tokenized and computed on your device.
+        Closing the tab erases everything. We could not read your data even if we wanted to.
+      </p>
+
+      <h2 class="mt-6 text-xl font-bold tracking-tight">Contact</h2>
+      <p>
+        Questions about this policy can be sent to
+        <span class="font-mono text-sm">privacy@llmtoolkit.dev</span>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

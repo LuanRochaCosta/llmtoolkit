@@ -1,0 +1,101 @@
+---
+import '../styles/global.css';
+import { SITE } from '../config';
+
+interface Props {
+  title: string;
+  description: string;
+  dateModified?: string;
+  noindex?: boolean;
+  extraSchemas?: object[];
+}
+
+const {
+  title,
+  description,
+  dateModified = '2026-08-25',
+  noindex = false,
+  extraSchemas = [],
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const fullTitle = title === SITE.name ? `${SITE.name} — ${SITE.tagline}` : `${title} | ${SITE.name}`;
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: Astro.site?.toString(),
+  description: SITE.description,
+};
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  url: canonical.toString(),
+  name: fullTitle,
+  dateModified,
+};
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.toString()} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.toString()} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+    {extraSchemas.map((schema) => <script type="application/ld+json" set:html={JSON.stringify(schema)} />)}
+  </head>
+  <body class="min-h-screen bg-[#FBFAF7] text-[#1C1B18] antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-[#0F6B5C] focus:px-4 focus:py-2 focus:text-white"
+    >
+      Skip to content
+    </a>
+
+    <header class="border-b border-[#E5E1D7]">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+          <img src="/favicon.svg" alt="" width="24" height="24" class="rounded" />
+          {SITE.name}
+        </a>
+        <nav class="flex items-center gap-6 text-sm text-[#6E6A60]">
+          <a href="/#tools" class="hover:text-[#1C1B18]">Tools</a>
+          <a href="/about" class="hover:text-[#1C1B18]">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="mx-auto max-w-5xl px-6 py-12">
+      <slot />
+    </main>
+
+    <footer class="border-t border-[#E5E1D7]">
+      <div class="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-8 text-sm text-[#6E6A60] sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          © {new Date().getFullYear()} {SITE.name}. All tools run 100% in your browser.
+        </div>
+        <nav class="flex gap-5">
+          <a href="/about" class="hover:text-[#1C1B18]">About</a>
+          <a href="/privacy" class="hover:text-[#1C1B18]">Privacy</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
