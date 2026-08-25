@@ -114,7 +114,7 @@ const faqSchema = {
             {
               commonTokens.map((t) => {
                 const words = Math.round(t * WORDS_PER_TOKEN);
-                const pages = (words * PAGES_PER_WORD).toFixed(pagesOf(t));
+                const pages = pagesOf(t);
                 return (
                   <tr class="border-b border-[#E5E1D7] last:border-0 hover:bg-[#FBFAF7]">
                     <td class="px-4 py-3 font-mono font-semibold">{fmt(t)}</td>
