@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { models } from '../../data/models';
+
+const sorted = [...models].sort((a, b) => b.contextWindow - a.contextWindow);
+const max = sorted[0].contextWindow;
+
+const WORDS_PER_TOKEN = 0.75;
+const WORDS_PER_PAGE = 500;
+
+function fmtTokens(n: number): string {
+  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M` : `${Math.round(n / 1000)}K`;
+}
+function fmtWords(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1000)}K`;
+  return `${Math.round(n)}`;
+}
+function fmtCost(n: number | null): string {
+  if (n === null) return '—';
+  return n < 1 ? `$${n.toFixed(3)}` : `$${n.toFixed(2)}`;
+}
+
+const largest = sorted[0];
+const largestWords = Math.round(largest.contextWindow * WORDS_PER_TOKEN);
+const largestPages = Math.round(largestWords / WORDS_PER_PAGE);
+const midModel = sorted.find((m) => m.id === 'gpt-5') ?? sorted[Math.floor(sorted.length / 2)];
+
+const faqs = [
+  {
+    q: 'What is an LLM context window?',
+    a: 'The context window is the maximum number of tokens a model can process in a single request — system prompt, conversation history, retrieved documents and the model\u2019s own output all count against it. Exceed it and the API either truncates the oldest content or returns an error. Bigger windows let you stuff entire codebases, long documents, or multi-hour agent histories into one request.',
+  },
+  {
+    q: 'Which model has the largest context window?',
+    a: `${largest.name} currently leads with ${fmtTokens(largest.contextWindow)} tokens — roughly ${fmtWords(largestWords)} words or about ${largestPages.toLocaleString('en-US')} pages of text. Google\u2019s Gemini lineup ships 1M across the family, OpenAI\u2019s GPT-5 family offers 400K, and Anthropic\u2019s Claude models offer 200K.`,
+  },
+  {
+    q: 'How many words fit in 128K tokens?',
+    a: `About 96,000 words — or roughly 190 pages. English text averages 1.3 tokens per word (0.75 words per token), so a 128K-token window holds ≈ 96K words. Code is denser: expect 30–50% fewer "useful" tokens after comments and whitespace. Our ${midModel.name} entry holds ${fmtWords(midModel.contextWindow * WORDS_PER_TOKEN)} words at ${fmtTokens(midModel.contextWindow)} tokens.`,
+  },
+  {
+    q: 'Does a bigger context window cost more?',
+    a: 'The window itself is free — you pay per token actually sent, not for the capacity. But in practice big contexts are expensive: sending ${fmtTokens(largest.contextWindow)} input tokens to fill Gemini\u2019s window costs ${fmtCost((largest.contextWindow / 1_000_000) * (largest.inputPer1M ?? 0))} at list price, every single request. Prompt caching (10% of normal input cost on Claude and GPT-5) is how production systems survive long contexts.',
+  },
+  {
+    q: 'What happens if my prompt exceeds the context window?',
+    a: 'The API rejects the request with a context-length error — it does not silently truncate in most cases. You either trim history, summarize older turns, switch to a bigger-window model, or move to a RAG setup that retrieves only relevant chunks instead of stuffing everything.',
+  },
+  {
+    q: 'Is a bigger context window always better?',
+    a: 'Not necessarily. Effective context use often degrades deep into very long inputs — models can miss details buried in the middle of huge prompts ("lost in the middle" behavior). For retrieval-heavy workloads, a well-chunked RAG pipeline over a 200K model frequently beats dumping 1M tokens of raw text. Pick the window that fits your real document sizes, not the biggest number on the box.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<BaseLayout
+  title="LLM Context Window Comparison — All Major Models (2026)"
+  description="Compare context window sizes across GPT-5, Claude and Gemini: token counts, approximate words and pages, and what it costs to fill each window. Verified data, visualized."
+  dateModified="2026-08-26"
+  extraSchemas={[faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">LLM Context Window Comparison</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        Every major model’s context limit, visualized — with the word counts and, crucially,
+        <strong>what it costs to actually fill each window</strong>. {models.length} models, verified
+        August 2026.
+      </p>
+    </header>
+
+    <!-- ============ QUICK ANSWER ============ -->
+    <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Key context facts">
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Largest window</p>
+        <p class="mt-1.5 font-semibold">{largest.name}</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#0F6B5C]">{fmtTokens(largest.contextWindow)}<span class="text-sm font-normal text-[#6E6A60]"> tokens</span></p>
+      </div>
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">That’s about</p>
+        <p class="mt-1.5 font-semibold">{fmtWords(largestWords)} words</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#0F6B5C]">≈{largestPages.toLocaleString('en-US')}<span class="text-sm font-normal text-[#6E6A60]"> pages</span></p>
+      </div>
+      <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+        <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Cost to fill it once</p>
+        <p class="mt-1.5 font-semibold">{largest.name} input</p>
+        <p class="mt-1 font-mono text-xl font-bold text-[#9A3412]">{fmtCost((largest.contextWindow / 1_000_000) * (largest.inputPer1M ?? 0))}<span class="text-sm font-normal text-[#6E6A60]"> per request</span></p>
+      </div>
+    </section>
+
+    <!-- ============ BAR CHART ============ -->
+    <section class="mt-10" aria-label="Context window chart">
+      <h2 class="text-2xl font-bold tracking-tight">Context windows, side by side</h2>
+      <div class="mt-6 space-y-3">
+        {
+          sorted.map((m) => (
+            <div>
+              <div class="mb-1 flex items-baseline justify-between text-sm">
+                <span class="font-medium">{m.name} <span class="text-xs text-[#6E6A60]">({m.provider})</span></span>
+                <span class="font-mono text-xs text-[#6E6A60]">{fmtTokens(m.contextWindow)} · ≈{fmtWords(m.contextWindow * WORDS_PER_TOKEN)} words</span>
+              </div>
+              <div class="h-7 w-full overflow-hidden rounded-md bg-[#F1EEE7]">
+                <div
+                  class="flex h-full items-center justify-end rounded-md bg-[#0F6B5C] pr-2"
+                  style={`width:${Math.max((m.contextWindow / max) * 100, 6)}%`}
+                >
+                  <span class="font-mono text-xs font-bold text-white">{fmtTokens(m.contextWindow)}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ TABLE ============ -->
+    <section class="mt-10" aria-label="Context and cost table">
+      <h2 class="text-2xl font-bold tracking-tight">Windows, words, and the cost of filling them</h2>
+      <div class="mt-4 overflow-x-auto rounded-xl border border-[#E5E1D7] bg-white">
+        <table class="w-full min-w-[640px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
+              <th class="px-4 py-3">Model</th>
+              <th class="px-4 py-3">Context</th>
+              <th class="px-4 py-3">≈ Words</th>
+              <th class="px-4 py-3">≈ Pages</th>
+              <th class="px-4 py-3">Cost to fill once</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              sorted.map((m) => {
+                const words = m.contextWindow * WORDS_PER_TOKEN;
+                const pages = Math.round(words / WORDS_PER_PAGE);
+                const fillCost = m.inputPer1M !== null ? (m.contextWindow / 1_000_000) * m.inputPer1M : null;
+                return (
+                  <tr class="border-b border-[#E5E1D7] last:border-0 hover:bg-[#FBFAF7]">
+                    <td class="px-4 py-3">
+                      <span class="font-medium">{m.name}</span>
+                      <span class="block text-xs text-[#6E6A60]">{m.provider}</span>
+                    </td>
+                    <td class="px-4 py-3 font-mono font-semibold">{fmtTokens(m.contextWindow)}</td>
+                    <td class="px-4 py-3 font-mono">{fmtWords(words)}</td>
+                    <td class="px-4 py-3 font-mono">{pages.toLocaleString('en-US')}</td>
+                    <td class="px-4 py-3 font-mono text-[#9A3412]">{fmtCost(fillCost)}</td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-xs leading-relaxed text-[#6E6A60]">
+        Word estimates assume English prose at 0.75 words per token (1.33 tokens per word) and 500 words per page.
+        "Cost to fill once" is list-price input cost for a single request that uses the entire window — with caching,
+        repeated long-context requests drop to roughly 10% of that.
+      </p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ RELATED ============ -->
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">Continue with the toolkit</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        Check how many tokens your document actually uses with the
+        <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">AI Token Counter</a>, compare
+        per-token rates on the <a href="/tools/llm-pricing/" class="font-medium text-[#0F6B5C] underline">Pricing
+        Comparison</a>, or turn volumes into a monthly bill with the
+        <a href="/tools/cost-calculator/" class="font-medium text-[#0F6B5C] underline">API Cost Calculator</a>.
+      </p>
+    </section>
+  </article>
+</BaseLayout>

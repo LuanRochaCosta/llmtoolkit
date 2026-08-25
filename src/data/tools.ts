@@ -30,7 +30,7 @@ export const tools: Tool[] = [
     name: 'Context Window Comparison',
     description:
       'Compare context window sizes across all major LLMs, visualized. Find the model that actually fits your document.',
-    status: 'planned',
+    status: 'live',
     keywords: ['context window comparison', 'llm context window', 'claude context window', 'gpt context window'],
   },
   {
@@ -38,7 +38,7 @@ export const tools: Tool[] = [
     name: 'LLM API Cost Calculator',
     description:
       'Estimate your real monthly API spend by request volume, input/output ratio and caching — then compare models on total cost.',
-    status: 'planned',
+    status: 'live',
     keywords: ['llm cost calculator', 'api cost calculator', 'chatgpt api cost', 'openai api cost calculator'],
   },
   {

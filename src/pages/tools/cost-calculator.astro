@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { models } from '../../data/models';
+
+const modelData = models
+  .filter((m) => m.inputPer1M !== null && m.outputPer1M !== null)
+  .map((m) => ({
+    id: m.id,
+    provider: m.provider,
+    name: m.name,
+    inputPer1M: m.inputPer1M,
+    outputPer1M: m.outputPer1M,
+    cachedInputPer1M: m.cachedInputPer1M,
+    verified: m.verified,
+  }));
+
+const faqs = [
+  {
+    q: 'How is LLM API cost calculated?',
+    a: 'Monthly cost = requests × (input tokens ÷ 1M × input price + output tokens ÷ 1M × output price). If you use prompt caching, replace the input price with the cached rate for the share of tokens that hit the cache. Example: 10,000 requests × (2,000 in + 500 out) tokens on GPT-5 mini ($0.25 in / $2.00 out per 1M) = 10,000 × ($0.0005 + $0.001) = $15.00/month.',
+  },
+  {
+    q: 'What does a typical LLM app cost per month?',
+    a: 'It depends almost entirely on volume and output length. A low-traffic side project (1K requests/day, 2K in / 500 out) runs $3–45/month depending on the model. A production app with 100K requests/day starts around $300/month on mini-tier models and passes $3,000/month on flagship models. Use the calculator above with your real numbers — the difference between model tiers is often 25×.',
+  },
+  {
+    q: 'How much does prompt caching save?',
+    a: 'Cached input costs about 10% of the normal rate on both OpenAI and Anthropic (e.g. GPT-5: $1.25 → $0.125 per 1M). If 80% of your input tokens are repeated context — system prompts, documents, conversation history — a 50% cache hit rate cuts your input bill by roughly 45%. Agent and RAG workloads benefit most.',
+  },
+  {
+    q: 'Why is output so much more expensive than input?',
+    a: 'Generating tokens is compute-heavier than reading them, so providers charge 4–8× more per output token — GPT-5 is $1.25 in vs $10.00 out. Practical consequence: for output-heavy workloads (long generations, agents, code), the output rate dominates your bill and should be the first number you compare. The table above factors this in automatically.',
+  },
+  {
+    q: 'What\u2019s the cheapest way to run 1M requests a month?',
+    a: 'Nano-tier models: GPT-5 nano at $0.05 in / $0.40 out per 1M tokens runs a 1K in / 300 out workload for about $175/month at 1M requests. The same volume on GPT-5 flagship costs ≈ $5,250. Route simple tasks (classification, extraction, routing) to nano models and reserve flagships for hard reasoning — model routing is the single biggest cost lever.',
+  },
+  {
+    q: 'Are these prices stable?',
+    a: 'No — providers adjust prices a few times a year, usually downward for older tiers when new models launch. Every rate in this calculator carries its verification date from our pricing database; we re-check against official pages monthly. Anthropic\u2019s Sonnet 5, for instance, has an introductory rate expiring August 31, 2026, after which it rises to $3.00 in / $15.00 out.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'LLM API Cost Calculator',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout
+  title="LLM API Cost Calculator — Estimate Your Monthly Bill"
+  description="Free LLM API cost calculator: enter your request volume and token sizes to compare monthly costs across GPT-5, Claude and Gemini — including prompt caching savings. Runs entirely in your browser."
+  dateModified="2026-08-26"
+  extraSchemas={[appSchema, faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">LLM API Cost Calculator</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        Enter your workload once, see the monthly bill for <strong>every model at once</strong> — including
+        prompt-caching savings. All {modelData.length} priced models, verified rates, computed locally in your browser.
+      </p>
+    </header>
+
+    <!-- ============ CALCULATOR ============ -->
+    <section class="mt-8" aria-label="Cost calculator">
+      <div class="grid gap-4 lg:grid-cols-[340px_1fr]">
+        <!-- Inputs -->
+        <div class="rounded-xl border border-[#E5E1D7] bg-white p-5">
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-[#6E6A60]">Your workload</h2>
+
+          <label for="inp-requests" class="mb-1 block text-sm font-medium">Requests per month</label>
+          <input id="inp-requests" type="number" min="0" step="1000" value="100000"
+            class="mb-4 w-full rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-2.5 font-mono text-sm outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20" />
+
+          <label for="inp-tokens-in" class="mb-1 block text-sm font-medium">Avg input tokens / request</label>
+          <input id="inp-tokens-in" type="number" min="0" step="100" value="2000"
+            class="mb-4 w-full rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-2.5 font-mono text-sm outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20" />
+
+          <label for="inp-tokens-out" class="mb-1 block text-sm font-medium">Avg output tokens / request</label>
+          <input id="inp-tokens-out" type="number" min="0" step="100" value="500"
+            class="mb-4 w-full rounded-lg border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-2.5 font-mono text-sm outline-none focus:border-[#0F6B5C] focus:ring-2 focus:ring-[#0F6B5C]/20" />
+
+          <label for="inp-cache" class="mb-1 flex items-baseline justify-between text-sm font-medium">
+            Cache hit rate
+            <span class="font-mono text-sm font-bold text-[#0F6B5C]"><span id="cache-value">0</span>%</span>
+          </label>
+          <input id="inp-cache" type="range" min="0" max="100" step="5" value="0"
+            class="mb-4 w-full accent-[#0F6B5C]" />
+          <p class="mb-4 -mt-2 text-xs leading-relaxed text-[#6E6A60]">Share of input tokens served from cache (repeated system prompts, documents, history).</p>
+
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#6E6A60]">Quick presets</h3>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" data-preset="chatbot" class="rounded-full border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-1.5 text-xs font-medium hover:border-[#0F6B5C] hover:text-[#0F6B5C]">Side-project chatbot</button>
+            <button type="button" data-preset="agent" class="rounded-full border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-1.5 text-xs font-medium hover:border-[#0F6B5C] hover:text-[#0F6B5C]">Coding agent</button>
+            <button type="button" data-preset="bulk" class="rounded-full border border-[#E5E1D7] bg-[#FBFAF7] px-3 py-1.5 text-xs font-medium hover:border-[#0F6B5C] hover:text-[#0F6B5C]">Bulk extraction</button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div>
+          <div class="mb-4 grid grid-cols-3 gap-3">
+            <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+              <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Monthly tokens</p>
+              <p id="stat-total-tokens" class="mt-1 font-mono text-lg font-bold">—</p>
+            </div>
+            <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+              <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Cheapest model</p>
+              <p id="stat-cheapest-name" class="mt-1 truncate text-sm font-semibold">—</p>
+              <p id="stat-cheapest-cost" class="font-mono text-lg font-bold text-[#0F6B5C]">—</p>
+            </div>
+            <div class="rounded-xl border border-[#E5E1D7] bg-white p-4">
+              <p class="text-xs font-medium uppercase tracking-wide text-[#6E6A60]">Flagship (GPT-5)</p>
+              <p id="stat-flagship-cost" class="mt-1 font-mono text-lg font-bold text-[#9A3412]">—</p>
+              <p id="stat-savings" class="text-xs text-[#0F6B5C]">—</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-[#E5E1D7] bg-white">
+            <table class="w-full min-w-[520px] border-collapse text-sm">
+              <thead>
+                <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
+                  <th class="px-4 py-3">Model</th>
+                  <th class="px-4 py-3">Input cost</th>
+                  <th class="px-4 py-3">Output cost</th>
+                  <th class="px-4 py-3">Monthly total</th>
+                  <th class="px-4 py-3">vs flagship</th>
+                </tr>
+              </thead>
+              <tbody id="cost-tbody"></tbody>
+            </table>
+          </div>
+          <p class="mt-3 text-xs leading-relaxed text-[#6E6A60]">
+            Computed from list prices verified August 2026. Cache savings use each provider’s published cached-input
+            rate (10% of base input on OpenAI and Anthropic; Gemini caching varies and is not yet included).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ METHOD ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">The math behind the numbers</h2>
+      <p class="mt-4 leading-relaxed">
+        Each row computes:
+        <span class="rounded bg-[#F1EEE7] px-1.5 py-0.5 font-mono text-sm">requests × [in÷1M × price_in_effective + out÷1M × price_out]</span>
+        where <em>price_in_effective</em> blends the normal and cached input rates by your cache hit rate. That blend
+        is why the cache slider changes input costs non-linearly — at 100% hit rate, input drops to roughly a tenth on
+        models that support caching.
+      </p>
+      <p class="mt-4 leading-relaxed">
+        Not sure how many tokens your prompts actually use? Measure real numbers with the
+        <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">AI Token Counter</a> — it runs
+        OpenAI’s exact tokenizer locally, so the counts match your bill. Full per-token rates live on the
+        <a href="/tools/llm-pricing/" class="font-medium text-[#0F6B5C] underline">Pricing Comparison</a> page.
+      </p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============ RELATED ============ -->
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">Complete your toolkit</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">Token Counter</a> for exact
+        counts, <a href="/tools/llm-pricing/" class="font-medium text-[#0F6B5C] underline">Pricing Comparison</a> for
+        per-token rates, and <a href="/tools/context-window/" class="font-medium text-[#0F6B5C] underline">Context
+        Window Comparison</a> to see what fits.
+      </p>
+    </section>
+  </article>
+
+  <script is:inline type="application/json" id="model-data" set:html={JSON.stringify(modelData)} />
+  <script>
+    import { initCostCalculator } from '../../scripts/cost-calculator';
+    initCostCalculator();
+  </script>
+</BaseLayout>
