@@ -13,15 +13,29 @@ npm run dev
 
 已注册 **llmtoolkit.dev**（Cloudflare Registrar），`config.ts` / `astro.config.mjs` / `robots.txt` 已接线。
 
-## 上线 checklist（Cloudflare Pages）
+## 部署
 
-1. `git init` + push 到 GitHub 仓库（私有即可）
-2. Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git → 选仓库
-3. 构建命令 `npm run build`，输出目录 `dist`，Node 兼容性选最新
-4. Custom domain 绑定（域名在 Cloudflare Registrar 时零配置）
-5. Google Search Console：DNS TXT 验证 → 提交 `sitemap-index.xml`
-6. Bing Webmaster Tools：导入 GSC → 拿 IndexNow key，部署时生成 `/_generated/indexnow-key.txt`
-7. Cloudflare Web Analytics：开启（免费、无 cookie）
+已通过 wrangler 直传部署到 Cloudflare Pages（wrangler 已登录）：
+
+```bash
+npm run build
+wrangler pages deploy dist --project-name llmtoolkit --branch main
+```
+
+- 生产域名：https://llmtoolkit.dev（已绑定，2026-08-25 验证 200）
+- 代码托管：https://github.com/LuanRochaCosta/llmtoolkit（推送需 LuanRochaCosta 凭据；远程 URL 已嵌入用户名）
+- 域名绑定完成后无需再动；每次更新 = build + deploy 两条命令
+
+## IndexNow（已配置）
+
+- Key：`04274b99048d971504b8b93fa05a68d4`（验证文件 `public/04274b99048d971504b8b93fa05a68d4.txt`，内容同 key）
+- 首次全量提交已完成（2026-08-26，HTTP 202 已受理）
+- 新页面/重要更新后重新提交：
+
+```powershell
+$body = @{ host = "llmtoolkit.dev"; key = "04274b99048d971504b8b93fa05a68d4"; keyLocation = "https://llmtoolkit.dev/04274b99048d971504b8b93fa05a68d4.txt"; urlList = @("<要提交的URL>") } | ConvertTo-Json
+Invoke-WebRequest -Uri "https://api.indexnow.org/indexnow" -Method POST -ContentType "application/json; charset=utf-8" -Body $body
+```
 
 ## 数据维护纪律（核心差异化资产）
 
@@ -30,7 +44,7 @@ npm run dev
 - 每行价格必须带 `source` 和 `lastChecked`
 - 对照官方 pricing 页核对后把 `verified` 置为 `true`
 - 每月 1 日全量核对一次（这也自动刷新页面的 dateModified，是 GEO 信号）
-- 当前数据全部来自二手来源、`verified: false`，**上线前必须逐行核对**
+- 2026-08-25 首轮核验完成：12 行中 11 行溯源至官方 pricing 页（OpenAI/Anthropic/Google），1 行（Gemini 3.1 Flash-Lite）标注 `verified: false`
 
 ## 路线图
 
