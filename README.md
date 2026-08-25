@@ -49,9 +49,11 @@ Invoke-WebRequest -Uri "https://api.indexnow.org/indexnow" -Method POST -Content
 ## 路线图
 
 - [x] Tool 1: AI Token Counter（`js-tiktoken` 客户端精确计数 + 估算标注）
-- [ ] Tool 2: LLM Pricing Comparison（models.ts 渲染 + 排序）
-- [ ] Tool 3: Context Window Comparison
-- [ ] Tool 4: LLM API Cost Calculator
-- [ ] Tool 5: Token ↔ Words Converter
+- [x] Tool 2: LLM Pricing Comparison（12 模型可排序表格 + 验证日期标注）
+- [x] Tool 3: Context Window Comparison（纯 CSS 服务端条形图 + 填充成本表）
+- [x] Tool 4: LLM API Cost Calculator（请求量/输入输出/缓存率 → 全模型月成本对比 + 预设）
+- [x] Tool 5: Token ↔ Words Converter（双向换算器 + 100 到 1M tokens 参考表）
+
+Phase 1 完成（2026-08-26）：5 工具全部上线。Phase 2 候选：模型对比着陆页矩阵（gpt-5 vs claude 等）、外链建设、Cloudflare Web Analytics。
 - [ ] FAQ schema + 每工具页 FAQ 块
 - [ ] AdSense（10+ 页后申请）
