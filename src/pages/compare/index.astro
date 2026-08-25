@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { comparePairs, fmtPrice, fmtContext } from '../../data/comparisons';
+
+const byProvider = new Map<string, typeof comparePairs>();
+for (const p of comparePairs) {
+  const key = `${p.a.provider} vs ${p.b.provider}`;
+  const list = byProvider.get(key) ?? [];
+  list.push(p);
+  byProvider.set(key, list);
+}
+
+const faqs = [
+  {
+    q: 'Which LLM is cheapest in 2026?',
+    a: 'GPT-5 nano at $0.05 per 1M input tokens and $0.40 per 1M output tokens is the cheapest verified production API. Claude Haiku 4.5 ($1.00 in / $5.00 out) is the cheapest Claude; Gemini 3.5 Flash ($1.50 in / $9.00 out) is Google\u2019s mainstream tier. Every comparison page on this site computes the winner at your real workload.',
+  },
+  {
+    q: 'How do I choose between GPT-5, Claude and Gemini?',
+    a: 'Compare on the axes that hit your bill: output price (dominates agent and generation workloads), input price (dominates analysis and RAG), cached-input price (dominates repeat-context apps), and context window (determines what fits in one request). Our head-to-head pages compute all four for each pair, then price three real workloads so you can see dollar differences, not just ratios.',
+  },
+  {
+    q: 'Are these comparison prices up to date?',
+    a: `Yes — every figure comes from our pricing database, where each row carries a verification date checked against official provider pages. All rows on this page were verified as of ${comparePairs[0].a.lastChecked}. Rows awaiting re-verification are labeled as such rather than silently going stale.`,
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<BaseLayout
+  title="LLM Comparison Hub — GPT-5 vs Claude vs Gemini (2026)"
+  description="Head-to-head LLM comparisons computed from verified pricing: GPT-5 vs Claude Opus, Gemini vs GPT-5 mini, and 14 more pairs — with per-token rates, context windows and monthly cost at three real workloads."
+  dateModified="2026-08-26"
+  extraSchemas={[faqSchema]}
+>
+  <article>
+    <header class="max-w-2xl">
+      <p class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-[#9A3412]">Comparison hub</p>
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Every model, head to head</h1>
+      <p class="mt-4 text-lg leading-relaxed text-[#4A4740]">
+        {comparePairs.length} data-driven comparisons across GPT-5, Claude and Gemini — each computed from
+        verified list prices, with monthly cost modeled at three real workloads. Numbers, not vibes.
+      </p>
+    </header>
+
+    {
+      [...byProvider.entries()].map(([group, pairs]) => (
+        <section class="mt-10">
+          <h2 class="mb-4 text-xl font-bold tracking-tight">{group}</h2>
+          <div class="grid gap-3 sm:grid-cols-2">
+            {pairs.map((p) => (
+              <a
+                href={`/compare/${p.slug}/`}
+                class="group rounded-xl border border-[#E5E1D7] bg-white p-5 transition hover:border-[#0F6B5C]"
+              >
+                <p class="font-semibold group-hover:text-[#0F6B5C]">{p.a.name} vs {p.b.name}</p>
+                <p class="mt-1 font-mono text-sm text-[#6E6A60]">
+                  {fmtPrice(p.a.inputPer1M)} vs {fmtPrice(p.b.inputPer1M)} /1M in
+                  <span class="mx-1.5">·</span>
+                  {fmtContext(p.a.contextWindow)} vs {fmtContext(p.b.contextWindow)} ctx
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="mt-14 max-w-2xl">
+      <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
+      <div class="mt-6 divide-y divide-[#E5E1D7]">
+        {
+          faqs.map((f) => (
+            <details class="group py-4">
+              <summary class="cursor-pointer list-none font-medium marker:hidden">
+                <span class="flex items-start justify-between gap-4">
+                  {f.q}
+                  <span class="mt-1 text-[#6E6A60] transition group-open:rotate-45" aria-hidden="true">+</span>
+                </span>
+              </summary>
+              <p class="mt-3 leading-relaxed text-[#4A4740]">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="mt-14 rounded-xl border border-[#E5E1D7] bg-[#F1EEE7] p-6">
+      <h2 class="text-lg font-bold tracking-tight">Build your own comparison</h2>
+      <p class="mt-2 text-sm leading-relaxed text-[#4A4740]">
+        Your workload is unique — the <a href="/tools/cost-calculator/" class="font-medium text-[#0F6B5C] underline">API Cost Calculator</a> prices
+        every model at your exact request volumes and cache profile, the <a href="/tools/token-counter/" class="font-medium text-[#0F6B5C] underline">Token Counter</a> measures
+        real token usage, and the <a href="/tools/llm-pricing/" class="font-medium text-[#0F6B5C] underline">Pricing Comparison</a> shows all rates on one screen.
+      </p>
+    </section>
+  </article>
+</BaseLayout>

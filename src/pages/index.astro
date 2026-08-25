@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 import { tools } from '../data/tools';
 import { models } from '../data/models';
+import { comparePairs } from '../data/comparisons';
 import { SITE } from '../config';
 
 const checkedDates = models.map((m) => m.lastChecked).sort();
@@ -26,6 +27,26 @@ const verifiedCount = models.filter((m) => m.verified).length;
     <h2 class="mb-6 text-2xl font-bold tracking-tight">All tools</h2>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {tools.map((tool) => <ToolCard tool={tool} />)}
+    </div>
+  </section>
+
+  <section id="comparisons" class="scroll-mt-20 py-8">
+    <div class="mb-6 flex items-baseline justify-between gap-4">
+      <h2 class="text-2xl font-bold tracking-tight">Popular comparisons</h2>
+      <a href="/compare/" class="text-sm font-medium text-[#0F6B5C] underline">All {comparePairs.length} comparisons →</a>
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        comparePairs.slice(0, 6).map((p) => (
+          <a
+            href={`/compare/${p.slug}/`}
+            class="group rounded-xl border border-[#E5E1D7] bg-white p-4 transition hover:border-[#0F6B5C]"
+          >
+            <p class="font-semibold group-hover:text-[#0F6B5C]">{p.a.name} vs {p.b.name}</p>
+            <p class="mt-1 text-xs text-[#6E6A60]">Pricing, context and real-workload costs</p>
+          </a>
+        ))
+      }
     </div>
   </section>
 
