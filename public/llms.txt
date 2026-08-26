@@ -13,7 +13,7 @@
 ## Tools
 
 - [AI Token Counter](https://llmtoolkit.dev/tools/token-counter/): Count tokens for any text using OpenAI's exact o200k tokenizer (GPT-5/4o precise) with per-model estimates for Claude and Gemini. Shows real-time cost and context-window usage.
-- [LLM API Pricing Comparison](https://llmtoolkit.dev/tools/llm-pricing/): Sortable table of 20 models — input, cached input, output rates per 1M tokens plus context windows, every row dated and verified.
+- [LLM API Pricing Comparison](https://llmtoolkit.dev/tools/llm-pricing/): Sortable table of 22 models — input, cached input, output rates per 1M tokens plus context windows, every row dated and verified.
 - [LLM Context Window Comparison](https://llmtoolkit.dev/tools/context-window/): All context windows visualized, with approximate word/page counts and what it costs to fill each window.
 - [LLM API Cost Calculator](https://llmtoolkit.dev/tools/cost-calculator/): Enter request volume, token sizes and cache hit rate — get the monthly bill for every model at once, sorted by cost.
 - [Token ↔ Words Converter](https://llmtoolkit.dev/tools/token-words/): Convert tokens to words and back, with a reference table from 100 to 1M tokens including page counts and which model windows fit.
