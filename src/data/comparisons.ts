@@ -93,7 +93,10 @@ export function buildPairFaqs(a: LLMModel, b: LLMModel): FaqItem[] {
     },
     {
       q: `${a.name} vs ${b.name}: which has the bigger context window?`,
-      a: `${biggerCtx.name}, with ${fmtContext(biggerCtx.contextWindow)} tokens vs ${fmtContext(smallerCtx.contextWindow)} — ${(biggerCtx.contextWindow / smallerCtx.contextWindow).toFixed(1)}× more room. Filling ${biggerCtx.name}'s window once costs ${fmtMoney((biggerCtx.contextWindow / 1_000_000) * (biggerCtx.inputPer1M ?? 0))} at list price, vs ${fmtMoney((smallerCtx.contextWindow / 1_000_000) * (smallerCtx.inputPer1M ?? 0))} for the smaller window.`,
+      a:
+        a.contextWindow === b.contextWindow
+          ? `Neither — both ship the same ${fmtContext(a.contextWindow)} context window. Filling it once costs ${fmtMoney((a.contextWindow / 1_000_000) * (a.inputPer1M ?? 0))} on ${a.name} at list price, vs ${fmtMoney((b.contextWindow / 1_000_000) * (b.inputPer1M ?? 0))} on ${b.name}.`
+          : `${biggerCtx.name}, with ${fmtContext(biggerCtx.contextWindow)} tokens vs ${fmtContext(smallerCtx.contextWindow)} — ${(biggerCtx.contextWindow / smallerCtx.contextWindow).toFixed(1)}× more room. Filling ${biggerCtx.name}'s window once costs ${fmtMoney((biggerCtx.contextWindow / 1_000_000) * (biggerCtx.inputPer1M ?? 0))} at list price, vs ${fmtMoney((smallerCtx.contextWindow / 1_000_000) * (smallerCtx.inputPer1M ?? 0))} for the smaller window.`,
     },
     {
       q: `Should I switch from ${a.name} to ${b.name}?`,
