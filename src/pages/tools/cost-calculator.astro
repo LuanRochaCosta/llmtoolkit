@@ -21,11 +21,11 @@ const faqs = [
   },
   {
     q: 'What does a typical LLM app cost per month?',
-    a: 'It depends almost entirely on volume and output length. A low-traffic side project (1K requests/day, 2K in / 500 out) runs $3–45/month depending on the model. A production app with 100K requests/day starts around $300/month on mini-tier models and passes $3,000/month on flagship models. Use the calculator above with your real numbers — the difference between model tiers is often 25×.',
+    a: 'It depends almost entirely on volume and output length. A low-traffic side project (1K requests/day, 2K in / 500 out) runs about $9/month on GPT-5 nano, $45/month on GPT-5 mini and $225/month on flagship GPT-5. A production app at 100K requests/day multiplies those by 100 — $4,500/month on mini-tier and $22,500/month on flagship models. Use the calculator above with your real numbers — the difference between model tiers is often 25×.',
   },
   {
     q: 'How much does prompt caching save?',
-    a: 'Cached input costs about 10% of the normal rate on both OpenAI and Anthropic (e.g. GPT-5: $1.25 → $0.125 per 1M). If 80% of your input tokens are repeated context — system prompts, documents, conversation history — a 50% cache hit rate cuts your input bill by roughly 45%. Agent and RAG workloads benefit most.',
+    a: 'Cached input costs about 10% of the normal rate on current-generation models (e.g. GPT-5: $1.25 → $0.125, Claude Sonnet 5: $2.00 → $0.20 per 1M); older OpenAI models cache higher — GPT-4o at 50%, o3 at 25%. If 80% of your input tokens are repeated context — system prompts, documents, conversation history — a 50% cache hit rate cuts your input bill by roughly 45%. Agent and RAG workloads benefit most.',
   },
   {
     q: 'Why is output so much more expensive than input?',
@@ -33,11 +33,11 @@ const faqs = [
   },
   {
     q: 'What\u2019s the cheapest way to run 1M requests a month?',
-    a: 'Nano-tier models: GPT-5 nano at $0.05 in / $0.40 out per 1M tokens runs a 1K in / 300 out workload for about $175/month at 1M requests. The same volume on GPT-5 flagship costs ≈ $5,250. Route simple tasks (classification, extraction, routing) to nano models and reserve flagships for hard reasoning — model routing is the single biggest cost lever.',
+    a: 'Nano-tier models: GPT-5 nano at $0.05 in / $0.40 out per 1M tokens runs a 1K in / 300 out workload for about $170/month at 1M requests. The same volume on GPT-5 flagship costs ≈ $4,250. Route simple tasks (classification, extraction, routing) to nano models and reserve flagships for hard reasoning — model routing is the single biggest cost lever.',
   },
   {
     q: 'Are these prices stable?',
-    a: 'No — providers adjust prices a few times a year, usually downward for older tiers when new models launch. Every rate in this calculator carries its verification date from our pricing database; we re-check against official pages monthly. Anthropic\u2019s Sonnet 5, for instance, has an introductory rate expiring August 31, 2026, after which it rises to $3.00 in / $15.00 out.',
+    a: 'No — providers adjust prices a few times a year, in both directions. Every rate in this calculator carries its verification date from our pricing database; we re-check against official pages monthly. Anthropic\u2019s Sonnet 5, for instance, kept its introductory $2.00 in / $10.00 out pricing after the scheduled September 2026 increase to $3/$15 was cancelled.',
   },
 ];
 

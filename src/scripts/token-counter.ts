@@ -6,6 +6,7 @@ interface ModelOption {
   inputPer1M: number | null;
   outputPer1M: number | null;
   lastChecked: string;
+  charsPerToken?: number;
 }
 
 type BpeEncoding = 'o200k_base' | 'cl100k_base';
@@ -17,9 +18,6 @@ interface Encoder {
 const CHAR_RATIOS: Record<string, number> = {
   Anthropic: 3.5,
   Google: 4,
-  Meta: 4,
-  'Moonshot AI': 3.5,
-  DeepSeek: 3.5,
 };
 
 function encodingFor(id: string): BpeEncoding | null {
@@ -125,7 +123,7 @@ export function initTokenCounter(): void {
       tokens = text === '' ? 0 : encoder.encode(text).length;
       method = `Exact — ${enc} BPE, same as the API`;
     } else {
-      const ratio = CHAR_RATIOS[model.provider] ?? 4;
+      const ratio = model.charsPerToken ?? CHAR_RATIOS[model.provider] ?? 4;
       tokens = Math.ceil(chars / ratio);
       method = `Estimated — ~${ratio} chars/token`;
     }

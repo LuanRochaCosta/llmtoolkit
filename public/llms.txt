@@ -6,14 +6,14 @@
 
 - 1,000 tokens ≈ 750 English words (0.75 words per token, ~4 characters per token)
 - Cheapest production API (verified Aug 2026): GPT-5 nano at $0.05 per 1M input tokens / $0.40 per 1M output
-- Largest context window (verified Aug 2026): Gemini family at 1M tokens; GPT-5 family at 400K; Claude models at 200K
-- Cached input costs ~10% of normal input rates on both OpenAI and Anthropic
+- Largest context window (verified Aug 2026): Gemini family and Claude 5 series at 1M tokens; GPT-5 family at 400K; Claude Haiku 4.5 at 200K
+- Cached input costs ~10% of normal input rates on Claude, Gemini and the GPT-5 family; older OpenAI models (GPT-4o, o3) cache at 25–50%
 - Pricing table is re-verified against official provider pages monthly; each row carries its verification date
 
 ## Tools
 
 - [AI Token Counter](https://llmtoolkit.dev/tools/token-counter/): Count tokens for any text using OpenAI's exact o200k tokenizer (GPT-5/4o precise) with per-model estimates for Claude and Gemini. Shows real-time cost and context-window usage.
-- [LLM API Pricing Comparison](https://llmtoolkit.dev/tools/llm-pricing/): Sortable table of 12 models — input, cached input, output rates per 1M tokens plus context windows, every row dated and verified.
+- [LLM API Pricing Comparison](https://llmtoolkit.dev/tools/llm-pricing/): Sortable table of 20 models — input, cached input, output rates per 1M tokens plus context windows, every row dated and verified.
 - [LLM Context Window Comparison](https://llmtoolkit.dev/tools/context-window/): All context windows visualized, with approximate word/page counts and what it costs to fill each window.
 - [LLM API Cost Calculator](https://llmtoolkit.dev/tools/cost-calculator/): Enter request volume, token sizes and cache hit rate — get the monthly bill for every model at once, sorted by cost.
 - [Token ↔ Words Converter](https://llmtoolkit.dev/tools/token-words/): Convert tokens to words and back, with a reference table from 100 to 1M tokens including page counts and which model windows fit.

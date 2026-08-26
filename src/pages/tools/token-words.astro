@@ -16,10 +16,10 @@ function pagesOf(tokens: number): string {
 }
 
 function fitsIn(tokens: number): string {
-  if (tokens <= 100_000) return 'every current model';
-  if (tokens <= 160_000) return 'Claude / GPT-5 / Gemini (200K+)';
-  if (tokens <= 320_000) return 'GPT-5 / Gemini (400K+)';
-  if (tokens <= 800_000) return 'Gemini only (1M)';
+  if (tokens <= 128_000) return 'every current model';
+  if (tokens <= 200_000) return 'all but the GPT-4o family (200K+)';
+  if (tokens <= 400_000) return 'GPT-5 / Claude 5 / Gemini (400K+)';
+  if (tokens <= 1_000_000) return 'Gemini / Claude 5 only (1M)';
   return 'exceeds all current windows';
 }
 
@@ -46,7 +46,7 @@ const faqs = [
   },
   {
     q: 'Why does this matter for API costs?',
-    a: 'Because you pay per token, not per word. Converting your content budget to tokens tells you your real API spend: 100 articles of 1,500 words each ≈ 200,000 tokens ≈ $0.25 to process on GPT-5 mini, but $2.50 on GPT-5 and $0.01 on GPT-5 nano. Measure your actual text with our Token Counter for exact numbers.',
+    a: 'Because you pay per token, not per word. Converting your content budget to tokens tells you your real API spend: 100 articles of 1,500 words each ≈ 200,000 tokens ≈ $0.05 to process on GPT-5 mini, $0.25 on GPT-5 and $0.01 on GPT-5 nano. Measure your actual text with our Token Counter for exact numbers.',
   },
 ];
 

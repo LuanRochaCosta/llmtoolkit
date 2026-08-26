@@ -22,7 +22,7 @@ const PAIR_IDS: [string, string][] = [
   ['gpt-4o', 'claude-sonnet-5'],
   ['gpt-4o-mini', 'gpt-5-nano'],
   ['gpt-4o', 'gpt-4o-mini'],
-  ['gemini-3-5-flash', 'gemini-3-1-flash-lite'],
+  ['gemini-3-5-flash', 'gemini-3-5-flash-lite'],
 ];
 
 function byId(id: string): LLMModel | undefined {

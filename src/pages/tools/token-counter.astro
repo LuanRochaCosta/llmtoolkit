@@ -10,6 +10,7 @@ const modelData = models.map((m) => ({
   inputPer1M: m.inputPer1M,
   outputPer1M: m.outputPer1M,
   lastChecked: m.lastChecked,
+  charsPerToken: m.charsPerToken,
 }));
 
 const faqs = [
@@ -27,7 +28,7 @@ const faqs = [
   },
   {
     q: 'Why is the Claude or Gemini count marked as estimated?',
-    a: 'Anthropic and Google have not published their tokenizers, so no third-party tool can count their tokens exactly. For those models we estimate from per-provider character ratios — about 3.5 characters per token for Claude and 4 for Gemini — which typically lands within ±5% of the real API count. We mark those results as estimates instead of pretending they are exact. OpenAI models use the actual BPE vocabulary tables, so those counts match the API.',
+    a: 'Anthropic and Google have not published their tokenizers, so no third-party tool can count their tokens exactly. For those models we estimate from character ratios: Claude models on the previous tokenizer run about 3.5 characters per token, while Anthropic\u2019s newer tokenizer (Claude 4.7 and later, including the Claude 5 series) produces roughly 30% more tokens for the same text, so those models are estimated at about 2.7 characters per token. Gemini is estimated at about 4 characters per token. These typically land within ±5% of the real API count. OpenAI models use the actual BPE vocabulary tables, so those counts match the API.',
   },
   {
     q: 'Does the token count include my system prompt?',
@@ -35,7 +36,7 @@ const faqs = [
   },
   {
     q: 'How do I turn tokens into dollars?',
-    a: 'Cost = (tokens ÷ 1,000,000) × price per 1M tokens. For example, 40,000 input tokens on a model charging $2.50 per 1M input tokens cost $0.10. This page computes the input cost automatically for the selected model; output tokens usually cost 3–5× the input rate.',
+    a: 'Cost = (tokens ÷ 1,000,000) × price per 1M tokens. For example, 40,000 input tokens on a model charging $2.50 per 1M input tokens cost $0.10. This page computes the input cost automatically for the selected model; output tokens usually cost 4–8× the input rate.',
   },
 ];
 
@@ -165,7 +166,12 @@ const appSchema = {
               <td class="py-2.5 font-medium text-[#0F6B5C]">Exact</td>
             </tr>
             <tr class="border-b border-[#E5E1D7]">
-              <td class="py-2.5 pr-4">Claude</td>
+              <td class="py-2.5 pr-4">Claude 5 series &amp; 4.7+</td>
+              <td class="py-2.5 pr-4">~2.7 characters per token (new tokenizer)</td>
+              <td class="py-2.5 text-[#6E6A60]">Estimate, ±5%</td>
+            </tr>
+            <tr class="border-b border-[#E5E1D7]">
+              <td class="py-2.5 pr-4">Claude 4.6 and earlier</td>
               <td class="py-2.5 pr-4">~3.5 characters per token</td>
               <td class="py-2.5 text-[#6E6A60]">Estimate, ±5%</td>
             </tr>
@@ -190,7 +196,7 @@ const appSchema = {
       <p class="mt-4 leading-relaxed">
         The formula is simple:
         <span class="rounded bg-[#F1EEE7] px-1.5 py-0.5 font-mono text-sm">cost = tokens ÷ 1,000,000 × price per 1M</span>.
-        40,000 input tokens on a $2.50/1M model cost $0.10. The catch is that output tokens usually cost 3–5× the
+        40,000 input tokens on a $2.50/1M model cost $0.10. The catch is that output tokens usually cost 4–8× the
         input rate, so a realistic budget needs both numbers — that is exactly what our API cost calculator (shipping
         next) is for.
       </p>
