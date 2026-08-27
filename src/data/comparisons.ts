@@ -105,6 +105,47 @@ export function buildPairFaqs(a: LLMModel, b: LLMModel): FaqItem[] {
   ];
 }
 
+export function buildModelFaqs(m: LLMModel): FaqItem[] {
+  const priced = models.filter((x) => x.inputPer1M !== null);
+  const byInput = [...priced].sort((a, b) => (a.inputPer1M ?? 0) - (b.inputPer1M ?? 0));
+  const rank = byInput.findIndex((x) => x.id === m.id) + 1;
+  const cheapest = byInput[0];
+  const priciest = byInput[byInput.length - 1];
+  const fillCost = (m.contextWindow / 1_000_000) * (m.inputPer1M ?? 0);
+  const words = Math.round(m.contextWindow * 0.75);
+  const pages = Math.round(words / 500);
+  const cachePct =
+    m.cachedInputPer1M != null && m.inputPer1M
+      ? Math.round((m.cachedInputPer1M / m.inputPer1M) * 100)
+      : null;
+  const vsCheapest =
+    m.inputPer1M && cheapest.inputPer1M ? (m.inputPer1M / cheapest.inputPer1M).toFixed(1) : null;
+
+  const faqs: FaqItem[] = [
+    {
+      q: `How much does ${m.name} cost per million tokens?`,
+      a: `${m.name} costs ${fmtPrice(m.inputPer1M)} per 1M input tokens and ${fmtPrice(m.outputPer1M)} per 1M output tokens${m.cachedInputPer1M != null ? `, with cached input at ${fmtPrice(m.cachedInputPer1M)}` : ''}. Rates are verified against ${m.provider}'s official pricing page as of ${m.lastChecked}.${m.note ? ` Note: ${m.note}.` : ''}`,
+    },
+    {
+      q: `How big is ${m.name}'s context window?`,
+      a: `${m.name} ships a ${fmtContext(m.contextWindow)} token context window — roughly ${words.toLocaleString('en-US')} English words, or about ${pages.toLocaleString('en-US')} pages of text. Filling the entire window once costs ${fmtMoney(fillCost)} in input tokens at list price.`,
+    },
+    {
+      q: `Is ${m.name} cheap or expensive compared to other models?`,
+      a: `Among the ${priced.length} models we track, ${m.name} ranks #${rank} on input price — cheapest is ${cheapest.name} at ${fmtPrice(cheapest.inputPer1M)}, priciest is ${priciest.name} at ${fmtPrice(priciest.inputPer1M)}.${vsCheapest ? ` At ${fmtPrice(m.inputPer1M)} per 1M input, ${m.name} runs ${vsCheapest}× the cheapest tier.` : ''} Compare it head-to-head with its rivals on the model comparison pages.`,
+    },
+  ];
+
+  if (cachePct !== null) {
+    faqs.push({
+      q: `What is cached input pricing on ${m.name}?`,
+      a: `${m.name} charges ${fmtPrice(m.cachedInputPer1M)} per 1M cached input tokens — ${cachePct}% of its ${fmtPrice(m.inputPer1M)} base input rate. If your requests repeat context (system prompts, documents, conversation history), prompt caching cuts the input portion of your bill accordingly. Model the exact savings on the API Cost Calculator.`,
+    });
+  }
+
+  return faqs;
+}
+
 export function fmtMoney(n: number): string {
   if (!Number.isFinite(n)) return '—';
   if (n === 0) return '$0';

@@ -97,8 +97,8 @@ const scenarios = costScenarios.map((s) => ({
           <thead>
             <tr class="border-b-2 border-[#1C1B18] text-left text-xs uppercase tracking-wide text-[#6E6A60]">
               <th class="px-4 py-3">Spec</th>
-              <th class="px-4 py-3">{A.name}</th>
-              <th class="px-4 py-3">{B.name}</th>
+              <th class="px-4 py-3"><a href={`/models/${A.id}/`} class="hover:text-[#0F6B5C] hover:underline">{A.name}</a></th>
+              <th class="px-4 py-3"><a href={`/models/${B.id}/`} class="hover:text-[#0F6B5C] hover:underline">{B.name}</a></th>
             </tr>
           </thead>
           <tbody>

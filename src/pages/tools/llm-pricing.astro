@@ -113,7 +113,7 @@ const lastCheck = [...new Set(models.map((m) => m.lastChecked))].sort().pop();
               sorted.map((m) => (
                 <tr class="border-b border-[#E5E1D7] last:border-0 hover:bg-[#FBFAF7]">
                   <td class="px-4 py-3">
-                    <span class="font-medium">{m.name}</span>
+                    <a href={`/models/${m.id}/`} class="font-medium text-[#1C1B18] hover:text-[#0F6B5C] hover:underline">{m.name}</a>
                     <span class="block text-xs text-[#6E6A60]">{m.provider}</span>
                   </td>
                   <td class="px-4 py-3 font-mono" data-value={m.contextWindow}>{fmtCtx(m.contextWindow)}</td>
