@@ -20,12 +20,17 @@
 
 ## Model comparisons
 
-- [Comparison hub — all 16 head-to-head pages](https://llmtoolkit.dev/compare/)
+- [Comparison hub — all 28 head-to-head pages](https://llmtoolkit.dev/compare/)
 - [GPT-5 vs Claude Opus 5](https://llmtoolkit.dev/compare/gpt-5-vs-claude-opus-5/)
 - [GPT-5 mini vs Claude Sonnet 5](https://llmtoolkit.dev/compare/gpt-5-mini-vs-claude-sonnet-5/)
 - [GPT-5 nano vs Claude Haiku 4.5](https://llmtoolkit.dev/compare/gpt-5-nano-vs-claude-haiku-4-5/)
 - [GPT-5 vs Gemini 3.5 Flash](https://llmtoolkit.dev/compare/gpt-5-vs-gemini-3-5-flash/)
 - [GPT-5 vs GPT-5 mini](https://llmtoolkit.dev/compare/gpt-5-vs-gpt-5-mini/)
+- [Claude Fable 5 vs GPT-5](https://llmtoolkit.dev/compare/claude-fable-5-vs-gpt-5/) — flagship showdown
+- [o3 vs GPT-5](https://llmtoolkit.dev/compare/o3-vs-gpt-5/) — reasoning model pricing
+- [Gemini 3.7 Flash vs Gemini 3.5 Flash](https://llmtoolkit.dev/compare/gemini-3-7-flash-vs-gemini-3-5-flash/) — intro pricing caveat
+- [GPT-5 mini vs GPT-4o mini](https://llmtoolkit.dev/compare/gpt-5-mini-vs-gpt-4o-mini/) — upgrade path
+- [Claude Haiku 4.5 vs Gemini 3.5 Flash-Lite](https://llmtoolkit.dev/compare/claude-haiku-4-5-vs-gemini-3-5-flash-lite/) — budget tier
 
 Each comparison includes per-token rates, cached rates, context windows, and monthly cost modeled at three real workloads (side-project chatbot, coding agent, bulk extraction).
 

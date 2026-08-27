@@ -114,6 +114,13 @@ const scenarios = costScenarios.map((s) => ({
           </tbody>
         </table>
       </div>
+      {
+        (A.note || B.note) && (
+          <p class="mt-3 text-xs leading-relaxed text-[#9A3412]">
+            {[A, B].filter((x) => x.note).map((x) => `${x.name}: ${x.note}`).join(' ')}
+          </p>
+        )
+      }
     </section>
 
     <!-- ============ SCENARIOS ============ -->

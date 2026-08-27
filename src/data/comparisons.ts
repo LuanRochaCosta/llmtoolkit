@@ -7,6 +7,7 @@ export interface ComparePair {
 }
 
 const PAIR_IDS: [string, string][] = [
+  // Batch 1 — core cross-provider and family matchups
   ['gpt-5', 'claude-opus-5'],
   ['gpt-5-mini', 'claude-sonnet-5'],
   ['gpt-5-nano', 'claude-haiku-4-5'],
@@ -23,6 +24,19 @@ const PAIR_IDS: [string, string][] = [
   ['gpt-4o-mini', 'gpt-5-nano'],
   ['gpt-4o', 'gpt-4o-mini'],
   ['gemini-3-5-flash', 'gemini-3-5-flash-lite'],
+  // Batch 2 — flagship showdowns, reasoning models, budget tier, upgrade paths
+  ['claude-fable-5', 'gpt-5'],
+  ['claude-fable-5', 'claude-opus-5'],
+  ['gpt-5-2', 'gpt-5'],
+  ['o3', 'gpt-5'],
+  ['o3', 'claude-sonnet-5'],
+  ['o4-mini', 'gpt-5-mini'],
+  ['gemini-3-7-flash', 'gemini-3-5-flash'],
+  ['gemini-3-7-flash', 'gpt-5-mini'],
+  ['claude-haiku-4-5', 'gemini-3-5-flash-lite'],
+  ['gpt-5-nano', 'gemini-3-5-flash-lite'],
+  ['gpt-4o-mini', 'claude-haiku-4-5'],
+  ['gpt-5-mini', 'gpt-4o-mini'],
 ];
 
 function byId(id: string): LLMModel | undefined {
