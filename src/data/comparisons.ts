@@ -157,7 +157,10 @@ export function fmtMoney(n: number): string {
 
 export function fmtPrice(n: number | null | undefined): string {
   if (n === null || n === undefined) return '—';
-  return n < 1 ? '$' + n.toFixed(n < 0.1 ? 3 : 2).replace(/0+$/, '').replace(/\.$/, '') : '$' + n.toFixed(2);
+  const two = n.toFixed(2);
+  if (n >= 0.01 && parseFloat(two) === n) return '$' + two;
+  const three = n.toFixed(3);
+  return '$' + (parseFloat(three) === n ? three : n.toFixed(4));
 }
 
 export function fmtContext(n: number): string {
