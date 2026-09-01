@@ -43,7 +43,7 @@ Invoke-WebRequest -Uri "https://api.indexnow.org/indexnow" -Method POST -Content
 
 - 每行价格必须带 `source` 和 `lastChecked`
 - 对照官方 pricing 页核对后把 `verified` 置为 `true`
-- 每月 1 日全量核对一次（这也自动刷新页面的 dateModified，是 GEO 信号）
+- 全量核对按需手动执行（月度定时任务已于 2026-09-01 移除；lastChecked 超 35 天必须补跑），核对后 lastChecked 与页面 dateModified 同步刷新（GEO 信号）
 - 2026-08-25 首轮核验完成：12 行中 11 行溯源至官方 pricing 页（OpenAI/Anthropic/Google），1 行（Gemini 3.1 Flash-Lite）标注 `verified: false`
 
 ## 路线图
