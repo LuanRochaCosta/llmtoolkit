@@ -12,6 +12,7 @@
 
 ## Tools
 
+- [Tools directory — all five tools on one page](https://llmtoolkit.dev/tools/): Free, privacy-first browser tools with a recommended workflow: count tokens, check verified rates, calculate your monthly bill.
 - [AI Token Counter](https://llmtoolkit.dev/tools/token-counter/): Count tokens for any text using OpenAI's exact o200k tokenizer (GPT-5/4o precise) with per-model estimates for Claude and Gemini. Shows real-time cost and context-window usage.
 - [LLM API Pricing Comparison](https://llmtoolkit.dev/tools/llm-pricing/): Sortable table of 22 models — input, cached input, output rates per 1M tokens plus context windows, every row dated and verified.
 - [LLM Context Window Comparison](https://llmtoolkit.dev/tools/context-window/): All context windows visualized, with approximate word/page counts and what it costs to fill each window.
