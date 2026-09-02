@@ -2,3 +2,7 @@
 # its comparison page now points at the current Flash vs Flash-Lite pair.
 /compare/gemini-3-5-flash-vs-gemini-3-1-flash-lite /compare/gemini-3-5-flash-vs-gemini-3-5-flash-lite 301
 /compare/gemini-3-5-flash-vs-gemini-3-1-flash-lite/ /compare/gemini-3-5-flash-vs-gemini-3-5-flash-lite/ 301
+
+# Astro emits sitemap-index.xml; alias the conventional /sitemap.xml path for tools
+# and crawlers that try it first. robots.txt declares the canonical location.
+/sitemap.xml /sitemap-index.xml 301
