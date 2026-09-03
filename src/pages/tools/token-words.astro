@@ -29,6 +29,22 @@ const faqs = [
     a: 'Approximately 750 words of English text. English averages 1.33 tokens per word (0.75 words per token), so 1,000 tokens ≈ 750 words ≈ 4,000 characters ≈ 1.5 pages. The ratio holds well for prose but not for code, which tokenizes denser.',
   },
   {
+    q: 'How many words is 500 tokens?',
+    a: 'About 375 words of English text (500 × 0.75 words per token) — roughly half a single-spaced page, or 2,000 characters. In reverse, 500 words is about 665 tokens. The 500-token range is a common unit for per-request rate limits and small prompt templates.',
+  },
+  {
+    q: 'How many words is 5,000 tokens?',
+    a: 'About 3,750 words — a long-form article or roughly 7.5 single-spaced pages. That is around 20,000 characters of English prose. Code, tables and JSON tokenize denser than prose, so technical content converts to fewer words per token in practice.',
+  },
+  {
+    q: 'How many words is 32,000 tokens?',
+    a: 'About 24,000 words — roughly 48 single-spaced pages, or a short non-fiction book. 32K is a common context or output limit tier, and it fits comfortably inside every current model, including small open-weight models that run on a single consumer GPU.',
+  },
+  {
+    q: 'How many words is 1 million tokens?',
+    a: 'About 750,000 words — roughly 1,500 single-spaced pages, or seven to eight full-length novels. 1M tokens is the long-context tier of Gemini and Claude 5. Because you pay per token, a full 1M-token request is exactly 1,000× the cost of a 1,000-token request on any model — measure your real counts with our Token Counter before committing to long-context jobs.',
+  },
+  {
     q: 'How many tokens is 500 words?',
     a: 'About 665 tokens. At 1.33 tokens per English word, multiply your word count by 1.33 to estimate tokens. A typical blog post of 1,500 words runs ≈ 2,000 tokens; a 60,000-word manuscript runs ≈ 80,000 tokens — which fits comfortably in every current model\u2019s context window.',
   },
@@ -64,7 +80,7 @@ const faqSchema = {
 <BaseLayout
   title="Token to Words Converter — How Many Words Is That?"
   description="Convert tokens to words (and back) instantly: 1,000 tokens ≈ 750 words. Includes a reference table from 100 to 1M tokens with word and page counts, plus per-language ratio notes."
-  dateModified="2026-08-26"
+  dateModified="2026-09-03"
   extraSchemas={[faqSchema]}
 >
   <article>
