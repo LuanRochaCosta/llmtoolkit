@@ -37,6 +37,10 @@ const faqs = [
     a: 'About 3,750 words — a long-form article or roughly 7.5 single-spaced pages. That is around 20,000 characters of English prose. Code, tables and JSON tokenize denser than prose, so technical content converts to fewer words per token in practice.',
   },
   {
+    q: 'How many words is 8,000 tokens?',
+    a: 'About 6,000 words — roughly 12 single-spaced pages or 24,000 characters of English prose. 8K is the classic small-context tier that fits every model on the market today, which is why it is a common default for local and embedded inference where memory is tight.',
+  },
+  {
     q: 'How many words is 32,000 tokens?',
     a: 'About 24,000 words — roughly 48 single-spaced pages, or a short non-fiction book. 32K is a common context or output limit tier, and it fits comfortably inside every current model, including small open-weight models that run on a single consumer GPU.',
   },
@@ -80,7 +84,7 @@ const faqSchema = {
 <BaseLayout
   title="Token to Words Converter — How Many Words Is That?"
   description="Convert tokens to words (and back) instantly: 1,000 tokens ≈ 750 words. Includes a reference table from 100 to 1M tokens with word and page counts, plus per-language ratio notes."
-  dateModified="2026-09-03"
+  dateModified="2026-09-05"
   extraSchemas={[faqSchema]}
 >
   <article>
